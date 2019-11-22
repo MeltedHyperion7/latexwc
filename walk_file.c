@@ -7,18 +7,31 @@
 
 int getCount(char* contents, long length) {
     char c;
-    int lastWordLength = 0, count = 0;
+
+    // we keep track of the length of the last word to deal with
+    // double spaces and intermixed tabs
+    int lastWordLength = 0;
+    int count = 0;
+
+    bool isTag = false;
+
     for(int i = 0, end = length + 1; i < end; i++) {
         c = contents[i];
         switch(c) {
+        case '\\':
+            isTag = true;
+            break;
         case ' ':
         case '\n':
-        case '\t': // should this be here?
+        case '\t':
         case '\0':
-            if(lastWordLength > 0) {
+
+            if(!isTag && lastWordLength > 0) {
                 count++;
-                lastWordLength = 0;
             }
+
+            lastWordLength = 0;
+            isTag = false;
             break;
         default:
             lastWordLength++;
