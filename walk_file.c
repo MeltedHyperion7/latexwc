@@ -8,6 +8,9 @@
 int getCount(char* contents, long length) {
     char c;
 
+    // implement bracket stack. the first item is for text outside any brackets
+    BracketStackItem* bracketStackTop = newBracketStackItem(true, '\0');
+    BracketStackItem* newBracket;
     // we keep track of the length of the last word to deal with
     // double spaces and intermixed tabs
     int lastWordLength = 0;
@@ -21,12 +24,28 @@ int getCount(char* contents, long length) {
         case '\\':
             isTag = true;
             break;
+        case '{':
+        case '[':
+            newBracket = newBracketStackItem(false, c);
+            bracketStackTop = push(newBracket, bracketStackTop);
+            break;
+        case '}':
+        case ']':
+            if((c == '}' && bracketStackTop->bracketType != '{') || (c == ']' && bracketStackTop->bracketType != '[')) {
+                // mismatching brackets, quit
+                
+                freeStack(bracketStackTop);
+                return -1;
+            }
+            bracketStackTop = pop(bracketStackTop);
+            lastWordLength = 0;
+            break;
         case ' ':
         case '\n':
         case '\t':
         case '\0':
 
-            if(!isTag && lastWordLength > 0) {
+            if(!isTag && bracketStackTop->containsText && lastWordLength > 0) {
                 count++;
             }
 
@@ -39,5 +58,6 @@ int getCount(char* contents, long length) {
         }
     }
 
+    freeStack(bracketStackTop);
     return count;
 }
