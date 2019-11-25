@@ -9,7 +9,7 @@ typedef struct tagArray {
     int length;
 } tagArray;
 
-    tagArray* newTagArray(int size);
+tagArray* newTagArray(int size);
 void tagArrayResize(tagArray* tarr, int newSize);
 void tagArrayAppend(tagArray* tarr, char* tag);
 char* tagArrayGet(tagArray* tarr, int n);
