@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "tag_array.h"
 
@@ -25,11 +26,29 @@ void tagArrayResize(tagArray* tarr, int newSize) {
 }
 
 void tagArrayAppend(tagArray* tarr, char* tag) {
+    /* Add [tag] to the end of [tarr]. Resize if needed. */
+    
     if(tarr->length == tarr->size) {
         tagArrayResize(tarr, tarr->size * 2);
     }
 
     tarr->arr[tarr->length] = tag;
+    tarr->length++;
+}
+
+void tagArrayAppendAllocateElement(tagArray* tarr, char* tag) {
+    /* Add [tag] to the end of [tarr]. Resize if needed. */
+    
+    if(tarr->length == tarr->size) {
+        tagArrayResize(tarr, tarr->size * 2);
+    }
+
+    int tagLength = strlen(tag);
+    char* newTag = malloc(sizeof(char) * (tagLength+1));
+    strcpy(newTag, tag);
+    // TODO need to add '\0'?
+
+    tarr->arr[tarr->length] = newTag;
     tarr->length++;
 }
 
@@ -51,6 +70,15 @@ void freeTagArray(tagArray* tarr) {
     // for(int i = 0; i < tarr->size; i++) {
     //     free(tarr->arr[i]);
     // }
+    free(tarr->arr);
+    free(tarr);
+}
+
+void freeTagArrayDeallocateElements(tagArray* tarr) {
+    for(int i = 0; i < tarr->length; i++) {
+        free(tarr->arr[i]);
+    }
+    
     free(tarr->arr);
     free(tarr);
 }
