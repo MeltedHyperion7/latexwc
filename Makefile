@@ -14,4 +14,4 @@ tag_array.o: tag_array.c tag_array.h
 	gcc -c -o build/$@ $<
 
 latexwc_test: latexwc_test.c latexwc.o walk_file.o bracket_stack.o tag_array.o
-	gcc -g -o test/$@ $< build/latexwc.o build/walk_file.o build/bracket_stack.o build/tag_array.o
+	gcc -g -O0 -o test/$@ $< build/latexwc.o build/walk_file.o build/bracket_stack.o build/tag_array.o
