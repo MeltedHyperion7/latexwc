@@ -66,6 +66,16 @@ void tagArraySet(tagArray* tarr, int n, char* tag) {
     }
 }
 
+bool tagArrayContains(tagArray* tarr, char* tag) {
+    for(int i = 0; i < tarr->length; i++) {
+        if(strcmp(tag, tarr->arr[i]) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void freeTagArray(tagArray* tarr) {
     // for(int i = 0; i < tarr->size; i++) {
     //     free(tarr->arr[i]);
@@ -78,7 +88,7 @@ void freeTagArrayDeallocateElements(tagArray* tarr) {
     for(int i = 0; i < tarr->length; i++) {
         free(tarr->arr[i]);
     }
-    
+
     free(tarr->arr);
     free(tarr);
 }
