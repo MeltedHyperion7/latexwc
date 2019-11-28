@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 // dedugging
 #include <stdio.h>
@@ -9,33 +10,18 @@
 
 #include "walk_file.h"
 
-// static int addLastWord(char* lastWord, tagArray* textTagList, BracketStackItem* bracketStackTop, int* lastWordLength, bool* isTag, bool* lastTagContainsText) {
-//     if(isTag) {
-//         if(tagArrayContains(textTagList, lastWord)) {
-//             *lastTagContainsText = true;
-//         } else {
-//             *lastTagContainsText = false;
-//         }
-//     } else if(bracketStackTop->containsText && lastWordLength > 0) {
-//         printf("Found word: %s\n", lastWord);
-//         return 1;
-//     }
-
-//     return 0;
-// }
-
 int getCount(char* contents, long length, tagArray* textTagList) {
     char c;
 
     // implement bracket stack. the first item is for text outside any brackets
     BracketStackItem* bracketStackTop = newBracketStackItem(true, '\0');
     BracketStackItem* newBracket;
+
     // we keep track of the length of the last word to deal with
     // double spaces and intermixed tabs
     int lastWordLength = 0;
     int count = 0;
 
-    // TODO maybe just store tags
     char lastWord[50];
 
     bool isTag = false;
@@ -45,15 +31,25 @@ int getCount(char* contents, long length, tagArray* textTagList) {
         c = contents[i];
         switch(c) {
         case '\\':
+        
         case '{':
         case '[':
         case '}':
         case ']':
+        
         case ' ':
+        case '(':
+        case ')':
+        case ',':
+        case '.':
+        case ';':
+        case '!':
+
         case '\n':
         case '\t':
         case '\0':
             lastWord[lastWordLength] = '\0';
+            
             if(isTag) {
                 if(tagArrayContains(textTagList, lastWord)) {
                     lastTagContainsText = true;
@@ -84,8 +80,10 @@ int getCount(char* contents, long length, tagArray* textTagList) {
             }
             break;
         default:
-            lastWord[lastWordLength] = c;
-            lastWordLength++;
+            if(isalpha(c)) {
+                lastWord[lastWordLength] = c;
+                lastWordLength++;
+            }
             break;
         }
     }
