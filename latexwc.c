@@ -2,69 +2,45 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "latexwc.h"
+#include "file_funcs.h"
+#include "walk_file.h"
 #include "tag_array.h"
 
-bool getContents(const char* filename, char** contents, long* length) {
-    FILE* file = fopen(filename, "r");
-    if(!file) {
-        return false;
+int main(int argc, char const *argv[]) {
+    tagArray* textTagList = getTextTags();
+    if(textTagList == NULL) {
+        fprintf(stderr, "Could not open .latexwc\n");
+        exit(1);
     }
 
-    fseek(file, 0, SEEK_END);
-    *length = ftell(file);
-    rewind(file);
+    // printf("Tag List Length: %d\n", textTagList->length);
+    // for(int i = 0, l = textTagList->length; i < l; i++) {
+    //     printf("%s\n", textTagList->arr[i]);
+    // }
 
-    *contents = malloc(*length + 1);
-    fread(*contents, *length, 1, file);
-    fclose(file);
+    // printf("Searching for \"section\": %d\n", tagArrayContains(textTagList, "section"));
+    // printf("Searching for \"subsection\": %d\n", tagArrayContains(textTagList, "subsection"));
+    // printf("Searching for \"section1\": %d\n", tagArrayContains(textTagList, "section1"));
+    // printf("Searching for \"secti o n\": %d\n", tagArrayContains(textTagList, "secti o n"));
+    // printf("Searching for \"\": %d\n", tagArrayContains(textTagList, ""));
+    // freeTagArrayDeallocateElements(textTagList);
 
-    (*contents)[*length] = '\0';
-    return true;
-}
-
-tagArray* getTextTags() {
-    char* contents;
+    char* contents = NULL;
     long length;
 
-    if(!getContents(CONFIG_FILE_PATH, &contents, &length)) {
-        return NULL;
+    if(argc != 2) {
+        fprintf(stderr, "Expected 2 arguments.\n");
+        exit(1);
     }
-    
-    char c;
-    char tag[20];
-    // char* tagToAppend;
-    int lastTagLength = 0;
-    tagArray* textTagList = newTagArray(APPROX_TEXT_TAG_COUNT);
+    // bool success = getContents("./test/test1.txt", &contents, &length);
+    if(getContents(argv[1], &contents, &length)) {
+        printf("%s\n", contents);
+        printf("Word Count: %d\n", getCount(contents, length, textTagList));
 
-    for(long i = 0, end = length + 1; i < end; i++) {
-        c = contents[i];
-        
-        switch(c) {
-            case ' ':
-                // ignore
-                break;
-            case '\n':
-            case '\0':
-                // add to array
-                if(lastTagLength != 0) {
-                    tag[lastTagLength] = '\0';
-
-                    // more memory efficient way to do this?
-                    // will this work?
-                    // sprintf(tagToAppend, "%s", tag);
-                    tagArrayAppendAllocateElement(textTagList, tag);
-                }
-                lastTagLength = 0;
-                break;
-            default:
-                tag[lastTagLength] = c;
-                lastTagLength += 1;
-                break;
-        }
+        freeTagArrayDeallocateElements(textTagList);
+        free(contents);
+    } else {
+        fprintf(stderr, "Couldn't open file.\n");
     }
-
-    free(contents);
-    return textTagList;
-    // add last word, if the file wasn't empty
+    return 0;
 }
