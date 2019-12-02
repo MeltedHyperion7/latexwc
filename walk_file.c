@@ -2,9 +2,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-// dedugging
-#include <stdio.h>
-
 #include "bracket_stack.h"
 #include "tag_array.h"
 
@@ -58,7 +55,6 @@ int getCount(char* contents, long length, tagArray* textTagList) {
                 }
             } else if(bracketStackTop->containsText && lastWordLength > 0) {
                 count++;
-                printf("Found word: %s\n", lastWord);
             }
 
             lastWordLength = 0;
