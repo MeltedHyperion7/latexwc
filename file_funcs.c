@@ -1,17 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "file_funcs.h"
 #include "tag_array.h"
 
-// char* getFilePath(char* path) {
-//     if(path[0] == '/') {
 
-//     }
-// }
+bool isTEXFile(const char* filepath) {
+    char* extension;
+    int pathLength = strlen(filepath);
+
+    if(pathLength < 5) {
+        // path not long enough to contain extension
+        return false;
+    }
+
+    extension = filepath + (pathLength - 4);
+    if(strcmp(extension, ".tex") == 0) {
+        return true;
+    }
+
+    return false;
+}
 
 bool getContents(const char* filename, char** contents, long* length) {
+    
     FILE* file = fopen(filename, "r");
     if(!file) {
         return false;

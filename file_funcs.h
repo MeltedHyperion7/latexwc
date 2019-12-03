@@ -8,7 +8,7 @@
 #define CONFIG_FILE_PATH "/home/MeltedHyperion7/.latexwc"
 #define APPROX_TEXT_TAG_COUNT 10
 
-// char* getFilePath(char* path);
+bool isTEXFile(const char* filename);
 bool getContents(const char* filename, char** contents, long* length);
 tagArray* getTextTags();
 

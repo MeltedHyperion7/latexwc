@@ -13,18 +13,6 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
-    // printf("Tag List Length: %d\n", textTagList->length);
-    // for(int i = 0, l = textTagList->length; i < l; i++) {
-    //     printf("%s\n", textTagList->arr[i]);
-    // }
-
-    // printf("Searching for \"section\": %d\n", tagArrayContains(textTagList, "section"));
-    // printf("Searching for \"subsection\": %d\n", tagArrayContains(textTagList, "subsection"));
-    // printf("Searching for \"section1\": %d\n", tagArrayContains(textTagList, "section1"));
-    // printf("Searching for \"secti o n\": %d\n", tagArrayContains(textTagList, "secti o n"));
-    // printf("Searching for \"\": %d\n", tagArrayContains(textTagList, ""));
-    // freeTagArrayDeallocateElements(textTagList);
-
     char* contents = NULL;
     long length;
 
@@ -32,9 +20,12 @@ int main(int argc, char const *argv[]) {
         fprintf(stderr, "Expected 2 arguments.\n");
         exit(1);
     }
-    // bool success = getContents("./test/test1.txt", &contents, &length);
+    if(!isTEXFile(argv[1])) {
+        fprintf(stderr, "Expected a .tex file.\n");
+        exit(1);
+    }
+
     if(getContents(argv[1], &contents, &length)) {
-        printf("%s\n", contents);
         printf("Word Count: %d\n", getCount(contents, length, textTagList));
 
         freeTagArrayDeallocateElements(textTagList);
