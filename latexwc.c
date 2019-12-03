@@ -8,6 +8,7 @@
 
 int main(int argc, char const *argv[]) {
     tagArray* textTagList = getTextTags();
+    
     if(textTagList == NULL) {
         fprintf(stderr, "Could not open .latexwc\n");
         exit(1);
@@ -20,12 +21,15 @@ int main(int argc, char const *argv[]) {
         fprintf(stderr, "Expected 2 arguments.\n");
         exit(1);
     }
-    if(!isTEXFile(argv[1])) {
+
+    char* filename = argv[1];
+
+    if(!isTEXFile(filename)) {
         fprintf(stderr, "Expected a .tex file.\n");
         exit(1);
     }
 
-    if(getContents(argv[1], &contents, &length)) {
+    if(getContents(filename, &contents, &length)) {
         printf("Word Count: %d\n", getCount(contents, length, textTagList));
 
         freeTagArrayDeallocateElements(textTagList);
