@@ -22,11 +22,15 @@ int getCount(char* contents, long length, tagArray* textTagList) {
     char lastWord[50];
 
     bool isTag = false;
+    bool isComment = false;
     bool lastTagContainsText = false;
 
     for(int i = 0, end = length + 1; i < end; i++) {
         c = contents[i];
         switch(c) {
+            // isComment = true;
+            // break;
+        case '%':
         case '\\':
         
         case '{':
@@ -35,6 +39,7 @@ int getCount(char* contents, long length, tagArray* textTagList) {
         case ']':
         
         case ' ':
+        case '?':
         case '(':
         case ')':
         case ',':
@@ -53,7 +58,7 @@ int getCount(char* contents, long length, tagArray* textTagList) {
                 } else {
                     lastTagContainsText = false;
                 }
-            } else if(bracketStackTop->containsText && lastWordLength > 0) {
+            } else if(!isComment && bracketStackTop->containsText && lastWordLength > 0) {
                 count++;
             }
 
@@ -73,10 +78,14 @@ int getCount(char* contents, long length, tagArray* textTagList) {
                     return -1;
                 }
                 bracketStackTop = pop(bracketStackTop);
+            } else if (c == '%') {
+                isComment = true;
+            } else if(c == '\n') {
+                isComment = false;
             }
             break;
         default:
-            if(isalpha(c)) {
+            if(isalpha(c) && !isComment) {
                 lastWord[lastWordLength] = c;
                 lastWordLength++;
             }
