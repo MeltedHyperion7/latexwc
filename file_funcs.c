@@ -47,7 +47,16 @@ tagArray* getTextTags() {
     char* contents;
     long length;
 
-    if(!getContents(CONFIG_FILE_PATH, &contents, &length)) {
+    char* configFilePath = getenv("HOME");
+    if(!configFilePath) {
+        // could not ascertain user's home directory
+        return NULL;
+    }
+
+    // complete the file path by adding on the name of the tag list file
+    strcat(configFilePath, "/.latexwc");
+
+    if(!getContents(configFilePath, &contents, &length)) {
         return NULL;
     }
     

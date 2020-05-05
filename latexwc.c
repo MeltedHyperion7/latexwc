@@ -30,7 +30,12 @@ int main(int argc, char const *argv[]) {
     }
 
     if(getContents(filename, &contents, &length)) {
-        printf("Word Count: %d\n", getCount(contents, length, textTagList));
+        int count = getCount(contents, length, textTagList);
+        if(count == -1) {
+            printf("An error occured while parsing the file.");
+        } else {
+            printf("Word Count: %d\n", count);
+        }
 
         freeTagArrayDeallocateElements(textTagList);
         free(contents);

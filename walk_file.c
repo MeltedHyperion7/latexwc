@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
 
@@ -24,12 +25,11 @@ int getCount(char* contents, long length, tagArray* textTagList) {
     bool isTag = false;
     bool isComment = false;
     bool lastTagContainsText = false;
+    bool isEscapedCharacter = false;
 
     for(int i = 0, end = length + 1; i < end; i++) {
         c = contents[i];
         switch(c) {
-            // isComment = true;
-            // break;
         case '%':
         case '\\':
         
@@ -50,41 +50,54 @@ int getCount(char* contents, long length, tagArray* textTagList) {
         case '\n':
         case '\t':
         case '\0':
-            lastWord[lastWordLength] = '\0';
-            
-            if(isTag) {
-                if(tagArrayContains(textTagList, lastWord)) {
-                    lastTagContainsText = true;
-                } else {
-                    lastTagContainsText = false;
+            if(isEscapedCharacter && (c == '#' || c == '$' || c == '%' || c == '&' || c == '_' || c == '{' || c == '}')) {
+                // other escape characters are treated as standard tags
+                // ? how to handle these characters
+                // right now we just ignore them
+                isEscapedCharacter = false;
+                isTag = false;
+            } else {
+                isEscapedCharacter = false;
+                lastWord[lastWordLength] = '\0';
+                
+                if(isTag) {
+                    if(tagArrayContains(textTagList, lastWord)) {
+                        lastTagContainsText = true;
+                    } else {
+                        lastTagContainsText = false;
+                    }
+                } else if(!isComment && bracketStackTop->containsText && lastWordLength > 0) {
+                    count++;
                 }
-            } else if(!isComment && bracketStackTop->containsText && lastWordLength > 0) {
-                count++;
+
+                lastWordLength = 0;
+                isTag = false;
+
+                if(c == '\\') {
+                    isTag = true;
+                    isEscapedCharacter = true;
+                } else if(c == '[' || c == '{') {
+                    newBracket = newBracketStackItem(lastTagContainsText, c);
+                    bracketStackTop = push(newBracket, bracketStackTop);
+                } else if(c == '}' || c == ']') {
+                    if((c == '}' && bracketStackTop->bracketType != '{') || (c == ']' && bracketStackTop->bracketType != '[')) {
+                        // mismatching brackets, quit
+                        
+                        freeStack(bracketStackTop);
+                        return -1;
+                    }
+                    bracketStackTop = pop(bracketStackTop);
+                } else if (c == '%') {
+                    isComment = true;
+                } else if(c == '\n') {
+                    isComment = false;
+                }
             }
 
-            lastWordLength = 0;
-            isTag = false;
-
-            if(c == '\\') {
-                isTag = true;
-            } else if(c == '[' || c == '{') {
-                newBracket = newBracketStackItem(lastTagContainsText, c);
-                bracketStackTop = push(newBracket, bracketStackTop);
-            } else if(c == '}' || c == ']') {
-                if((c == '}' && bracketStackTop->bracketType != '{') || (c == ']' && bracketStackTop->bracketType != '[')) {
-                    // mismatching brackets, quit
-                    
-                    freeStack(bracketStackTop);
-                    return -1;
-                }
-                bracketStackTop = pop(bracketStackTop);
-            } else if (c == '%') {
-                isComment = true;
-            } else if(c == '\n') {
-                isComment = false;
-            }
             break;
         default:
+            isEscapedCharacter = false;
+
             if(isalpha(c) && !isComment) {
                 lastWord[lastWordLength] = c;
                 lastWordLength++;
