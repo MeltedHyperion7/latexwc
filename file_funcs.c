@@ -43,26 +43,58 @@ bool getContents(const char* filename, char** contents, long* length) {
     return true;
 }
 
-tagArray* getTextTags() {
+tagArray* getTextTags(bool excludeHeadings) {
     char* contents;
     long length;
 
-    char* configFilePath = getenv("HOME");
-    if(!configFilePath) {
+    char* homeDir = getenv("HOME");
+    if(!homeDir) {
         // could not ascertain user's home directory
         return NULL;
     }
 
+    char* textTagsFilePath;
+    asprintf(&textTagsFilePath, "%s/.latexwc/.texttags", homeDir);
     // complete the file path by adding on the name of the tag list file
-    strcat(configFilePath, "/.latexwc");
 
-    if(!getContents(configFilePath, &contents, &length)) {
+    if(!getContents(textTagsFilePath, &contents, &length)) {
+        printf("Could not open: %s\n.", textTagsFilePath);
+        free(textTagsFilePath);
         return NULL;
     }
     
+    if(!excludeHeadings) {
+        char* headingsFileContents;
+        long headingsFileLength;
+        char* headingsFilePath;
+
+        asprintf(&headingsFilePath, "%s/.latexwc/.headings", homeDir);
+
+        if(!getContents(headingsFilePath, &headingsFileContents, &headingsFileLength)) {
+            printf("Could not open: %s\n.", headingsFilePath);
+            free(headingsFilePath);
+            return NULL;
+        }
+
+        // ensure that [contents] has enough space to store the addition text from .headings
+        contents = realloc(contents, (length + headingsFileLength + 2) * sizeof(char));
+
+        // ? will [headingsFileContents] need to be freed
+
+        // ? can this be done easier with asprintf (can the same pointer be passed as the target as well as a value?)
+        strcat(contents, "\n");
+        strcat(contents, headingsFileContents);
+
+        // ? is this correct
+        length += headingsFileLength + 1;
+
+        // cleanup
+        free(headingsFilePath);
+    }
+
     char c;
+    // ? fix the potential buffer overflow with [tag]
     char tag[20];
-    // char* tagToAppend;
     int lastTagLength = 0;
     tagArray* textTagList = newTagArray(APPROX_TEXT_TAG_COUNT);
 
@@ -79,9 +111,6 @@ tagArray* getTextTags() {
                 if(lastTagLength != 0) {
                     tag[lastTagLength] = '\0';
 
-                    // more memory efficient way to do this?
-                    // will this work?
-                    // sprintf(tagToAppend, "%s", tag);
                     tagArrayAppendAllocateElement(textTagList, tag);
                 }
                 lastTagLength = 0;
@@ -93,7 +122,9 @@ tagArray* getTextTags() {
         }
     }
 
+    // cleanup
     free(contents);
+    free(textTagsFilePath);
+
     return textTagList;
-    // add last word, if the file wasn't empty
 }

@@ -9,6 +9,6 @@
 
 bool isTEXFile(const char* filename);
 bool getContents(const char* filename, char** contents, long* length);
-tagArray* getTextTags();
+tagArray* getTextTags(bool excludeHeadings);
 
 #endif

@@ -77,9 +77,6 @@ bool tagArrayContains(tagArray* tarr, char* tag) {
 }
 
 void freeTagArray(tagArray* tarr) {
-    // for(int i = 0; i < tarr->size; i++) {
-    //     free(tarr->arr[i]);
-    // }
     free(tarr->arr);
     free(tarr);
 }
