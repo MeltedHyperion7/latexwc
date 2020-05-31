@@ -209,6 +209,8 @@ treeNode* loadStopwordsList(char* stopwordsFilePath) {
     char c;
     int lastWordLength = 0;
     char lastWord[20];
+    // ? could cause buffer overflow
+    
     treeNode* root = newTreeNode(0, '\0', false);
     for(long i = 0, end = length + 1; i < end; i++) {
         c = contents[i];
