@@ -117,7 +117,7 @@ tagArray* getTextTags(bool excludeHeadings) {
                 break;
             default:
                 tag[lastTagLength] = c;
-                lastTagLength += 1;
+                lastTagLength++;
                 break;
         }
     }

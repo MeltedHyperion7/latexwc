@@ -7,17 +7,36 @@
 #include "file_funcs.h"
 #include "walk_file.h"
 #include "tag_array.h"
+#include "stopwords_tree.h"
 
 int main(int argc, char const *argv[]) {
     // TODO run valgrind
-    bool hFlagSet, fileProvided;
+    bool hFlagSet, ignoreStopwordsFlagSet, fileProvided;
     char* filename;
 
     // if -h flag is set, headings and titles are excluded from the count
     addFlag('h', "exclude-headings", false, &hFlagSet, NULL);
     addFlag('.', NULL, true, &fileProvided, &filename);
+    addFlag('s', "ignore-stopwords", false, &ignoreStopwordsFlagSet, NULL);
+    // TODO add flag for user's stopwords file
 
     bool argParsingSuccess = parseArguments(argc, argv);
+
+    treeNode* stopwordsTree;
+    if(ignoreStopwordsFlagSet) {
+        char* stopwordsFilePath;
+        asprintf(&stopwordsFilePath, "%s/.latexwc/.stopwords", getenv("HOME"));
+        stopwordsTree = loadStopwordsList(stopwordsFilePath);
+        if(stopwordsTree == NULL) {
+            sprintf(stderr, "Could not load stop words.\n");
+            free(stopwordsFilePath);
+            exit(1);
+        }
+
+        free(stopwordsFilePath);
+    } else {
+        stopwordsTree = NULL;
+    }
 
     if(!fileProvided) {
         fprintf(stderr, "No file path provided.\n");
@@ -46,13 +65,16 @@ int main(int argc, char const *argv[]) {
     long length;
 
     if(getContents(filename, &contents, &length)) {
-        int count = getCount(contents, length, textTagList);
+        int count = getCount(contents, length, textTagList, stopwordsTree);
         if(count == -1) {
             printf("An error occured while parsing the file.");
         } else {
             printf("Word Count: %d\n", count);
         }
 
+        if(ignoreStopwordsFlagSet) {
+            freeTreeNode(stopwordsTree);
+        }
         freeTagArrayDeallocateElements(textTagList);
         free(contents);
     } else {

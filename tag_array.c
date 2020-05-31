@@ -46,7 +46,6 @@ void tagArrayAppendAllocateElement(tagArray* tarr, char* tag) {
     int tagLength = strlen(tag);
     char* newTag = malloc(sizeof(char) * (tagLength+1));
     strcpy(newTag, tag);
-    // TODO need to add '\0'?
 
     tarr->arr[tarr->length] = newTag;
     tarr->length++;

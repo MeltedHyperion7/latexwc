@@ -5,10 +5,11 @@
 
 #include "bracket_stack.h"
 #include "tag_array.h"
+#include "stopwords_tree.h"
 
 #include "walk_file.h"
 
-int getCount(char* contents, long length, tagArray* textTagList) {
+int getCount(char* contents, long length, tagArray* textTagList, treeNode* stopwordsTree) {
     char c;
 
     // implement bracket stack. the first item is for text outside any brackets
@@ -67,7 +68,11 @@ int getCount(char* contents, long length, tagArray* textTagList) {
                         lastTagContainsText = false;
                     }
                 } else if(!isComment && bracketStackTop->containsText && lastWordLength > 0) {
-                    count++;
+                    // ignore stopwords, if the necessary flag was set
+                    // (if the flag was set, [stopwordsTree] would be non NULL)
+                    if(stopwordsTree == NULL || !stopwordsTreeSearch(stopwordsTree, lastWord)) {
+                        count++;
+                    }
                 }
 
                 lastWordLength = 0;

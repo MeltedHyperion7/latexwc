@@ -19,5 +19,4 @@ bool tagArrayContains(tagArray* tarr, char* tag);
 void freeTagArray(tagArray* tarr);
 void freeTagArrayDeallocateElements(tagArray* tarr);
 
-
 #endif
