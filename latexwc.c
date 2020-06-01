@@ -11,74 +11,85 @@
 
 int main(int argc, char const *argv[]) {
     // TODO run valgrind
-    bool hFlagSet, ignoreStopwordsFlagSet, fileProvided;
+    bool helpFlagSet, headingsFlagSet, ignoreStopwordsFlagSet, fileProvided;
     char* filename;
 
     // if -h flag is set, headings and titles are excluded from the count
-    addFlag('h', "exclude-headings", false, &hFlagSet, NULL);
+    addFlag('h', "help", false, &helpFlagSet, NULL);
+    addFlag('H', "exclude-headings", false, &headingsFlagSet, NULL);
     addFlag('.', NULL, true, &fileProvided, &filename);
     addFlag('s', "ignore-stopwords", false, &ignoreStopwordsFlagSet, NULL);
     // TODO add flag for user's stopwords file
 
     bool argParsingSuccess = parseArguments(argc, argv);
 
-    treeNode* stopwordsTree;
-    if(ignoreStopwordsFlagSet) {
-        char* stopwordsFilePath;
-        asprintf(&stopwordsFilePath, "%s/.latexwc/.stopwords", getenv("HOME"));
-        stopwordsTree = loadStopwordsList(stopwordsFilePath);
-        if(stopwordsTree == NULL) {
-            sprintf(stderr, "Could not load stop words.\n");
+    if(helpFlagSet) {
+        // show help text
+        printf("Usage: latexwc [options] file\n");
+        printf("Options:\n");
+        printf("  -h: Display this information.\n");
+        printf("  -H: Ignore words in headings and titles.\n");
+        printf("  -s: Ignore stopwords.\n");
+    } else {
+        // TODO perform file checks before loading stopwords
+        treeNode* stopwordsTree;
+        if(ignoreStopwordsFlagSet) {
+            char* stopwordsFilePath;
+            asprintf(&stopwordsFilePath, "%s/.latexwc/.stopwords", getenv("HOME"));
+            stopwordsTree = loadStopwordsList(stopwordsFilePath);
+            if(stopwordsTree == NULL) {
+                sprintf(stderr, "Could not load stop words.\n");
+                free(stopwordsFilePath);
+                exit(1);
+            }
+
             free(stopwordsFilePath);
+        } else {
+            stopwordsTree = NULL;
+        }
+
+        if(!fileProvided) {
+            fprintf(stderr, "No file path provided.\n");
             exit(1);
         }
 
-        free(stopwordsFilePath);
-    } else {
-        stopwordsTree = NULL;
-    }
+        if(!argParsingSuccess) {
+            fprintf(stderr, "Unknown argument.\n");
+            exit(1);
+        }
 
-    if(!fileProvided) {
-        fprintf(stderr, "No file path provided.\n");
-        exit(1);
-    }
+        // file provided wasn't a latex file
+        if(!isTEXFile(filename)) {
+            fprintf(stderr, "Expected a .tex file.\n");
+            exit(1);
+        }
 
-    if(!argParsingSuccess) {
-        fprintf(stderr, "Unknown argument.\n");
-        exit(1);
-    }
+        tagArray* textTagList = getTextTags(headingsFlagSet);
+        
+        if(textTagList == NULL) {
+            fprintf(stderr, "Could not open .latexwc\n");
+            exit(1);
+        }
 
-    // file provided wasn't a latex file
-    if(!isTEXFile(filename)) {
-        fprintf(stderr, "Expected a .tex file.\n");
-        exit(1);
-    }
+        char* contents = NULL;
+        long length;
 
-    tagArray* textTagList = getTextTags(hFlagSet);
-    
-    if(textTagList == NULL) {
-        fprintf(stderr, "Could not open .latexwc\n");
-        exit(1);
-    }
+        if(getContents(filename, &contents, &length)) {
+            int count = getCount(contents, length, textTagList, stopwordsTree);
+            if(count == -1) {
+                printf("An error occured while parsing the file.");
+            } else {
+                printf("Word Count: %d\n", count);
+            }
 
-    char* contents = NULL;
-    long length;
-
-    if(getContents(filename, &contents, &length)) {
-        int count = getCount(contents, length, textTagList, stopwordsTree);
-        if(count == -1) {
-            printf("An error occured while parsing the file.");
+            if(ignoreStopwordsFlagSet) {
+                freeTreeNode(stopwordsTree);
+            }
+            freeTagArrayDeallocateElements(textTagList);
+            free(contents);
         } else {
-            printf("Word Count: %d\n", count);
+            fprintf(stderr, "Couldn't open file.\n");
         }
-
-        if(ignoreStopwordsFlagSet) {
-            freeTreeNode(stopwordsTree);
-        }
-        freeTagArrayDeallocateElements(textTagList);
-        free(contents);
-    } else {
-        fprintf(stderr, "Couldn't open file.\n");
     }
 
     return 0;
