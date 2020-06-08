@@ -11,7 +11,7 @@
 
 int main(int argc, char const *argv[]) {
     // TODO run valgrind
-    bool helpFlagSet, headingsFlagSet, ignoreStopwordsFlagSet, fileProvided;
+    bool helpFlagSet, headingsFlagSet, ignoreStopwordsFlagSet, ignoreStopwordsLongFlagSet, fileProvided;
     char* filename;
 
     // if -h flag is set, headings and titles are excluded from the count
@@ -19,6 +19,7 @@ int main(int argc, char const *argv[]) {
     addFlag('H', "exclude-headings", false, &headingsFlagSet, NULL);
     addFlag('.', NULL, true, &fileProvided, &filename);
     addFlag('s', "ignore-stopwords", false, &ignoreStopwordsFlagSet, NULL);
+    addFlag('S', "ignore-stopwords-long", false, &ignoreStopwordsLongFlagSet, NULL);
     // TODO add flag for user's stopwords file
 
     bool argParsingSuccess = parseArguments(argc, argv);
@@ -30,15 +31,32 @@ int main(int argc, char const *argv[]) {
         printf("  -h: Display this information.\n");
         printf("  -H: Ignore words in headings and titles.\n");
         printf("  -s: Ignore stopwords.\n");
+        printf("  -S: Ignore stopwords. Uses a more expansive list of stopwords than -s.\n");
     } else {
         // TODO perform file checks before loading stopwords
         treeNode* stopwordsTree;
+        if(ignoreStopwordsFlagSet && ignoreStopwordsLongFlagSet) {
+            // ensure that both of -s and -S aren't set simultaneously
+            fprintf(stderr, "Only one of -s and -S can be set.\n");
+            exit(1);
+        }
         if(ignoreStopwordsFlagSet) {
             char* stopwordsFilePath;
             asprintf(&stopwordsFilePath, "%s/.latexwc/.stopwords", getenv("HOME"));
             stopwordsTree = loadStopwordsList(stopwordsFilePath);
             if(stopwordsTree == NULL) {
-                sprintf(stderr, "Could not load stop words.\n");
+                fprintf(stderr, "Could not load stopwords file.\n");
+                free(stopwordsFilePath);
+                exit(1);
+            }
+
+            free(stopwordsFilePath);
+        } else if(ignoreStopwordsLongFlagSet) {
+            char* stopwordsFilePath;
+            asprintf(&stopwordsFilePath, "%s/.latexwc/.stopwords-long", getenv("HOME"));
+            stopwordsTree = loadStopwordsList(stopwordsFilePath);
+            if(stopwordsTree == NULL) {
+                fprintf(stderr, "Could not load stopwords file.\n");
                 free(stopwordsFilePath);
                 exit(1);
             }

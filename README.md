@@ -14,5 +14,5 @@ Run with the --help flag to get a full list of available options.
 Use the -H flag.  
 `latexwc -H <filename>`
 ### Ignore Stopwords
-Remove stopwords (like 'a', 'an', 'where') from the count. Use the -s flag.  
+Remove stopwords (like 'a', 'an', 'where') from the count. Use the -s flag. Use -S for a more expansive list of stopwords.
 `latexwc -s <filename>`

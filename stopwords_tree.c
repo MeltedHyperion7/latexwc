@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "file_funcs.h"
 
@@ -116,7 +117,6 @@ treeNode* childWithLetter(treeNode* node, char letter) {
     */
 
     for(int i = 0; i < node->children->length; i++) {
-        // if(node->children->arr[i]->letter == letter) {
         if(treeNodeArrayGet(node->children, i)->letter == letter) {
             return treeNodeArrayGet(node->children, i);
         }
@@ -134,11 +134,14 @@ bool stopwordsTreeSearch(treeNode* stopwordsTree, char* word) {
     // the next letter of the word until we find find the full word
     //  if at any point the next letter could not be found, the search returns false
     bool matchedLetter;
+    char letterLowered;
     for(int wordIndex = 0, wordLength = strlen(word); wordIndex < wordLength; wordIndex++) {
         matchedLetter = false;
+        letterLowered = tolower(word[wordIndex]);
 
+        // ? can childWithLetter be used here
         for(int i = 0; i < walk->children->length; i++) {
-            if(word[wordIndex] == treeNodeArrayGet(walk->children, i)->letter) {
+            if(letterLowered == treeNodeArrayGet(walk->children, i)->letter) {
                 walk = treeNodeArrayGet(walk->children, i);
                 matchedLetter = true;
                 break;
@@ -150,12 +153,8 @@ bool stopwordsTreeSearch(treeNode* stopwordsTree, char* word) {
         }
     }
 
-    if(walk->isWordEnd) {
-        // the node must be the end of a word that was added to the tree
-        return true;
-    } else {
-        return false;
-    }
+    // the node must be the end of a word that was added to the tree
+    return walk->isWordEnd;
 }
 
 void stopwordsTreeAddWord(treeNode* root, char* word) {
@@ -230,7 +229,7 @@ treeNode* loadStopwordsList(char* stopwordsFilePath) {
                 lastWordLength = 0;
                 break;
             default:
-                lastWord[lastWordLength] = c;
+                lastWord[lastWordLength] = tolower(c);
                 lastWordLength++;
                 break;
         }
