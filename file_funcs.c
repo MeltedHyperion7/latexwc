@@ -90,6 +90,7 @@ tagArray* getTextTags(bool excludeHeadings) {
 
         // cleanup
         free(headingsFilePath);
+        free(headingsFileContents);
     }
 
     char c;

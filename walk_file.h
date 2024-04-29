@@ -8,6 +8,6 @@
 #ifndef WALK_FILE_H_
 #define WALK_FILE_H_
 
-int getCount(char* contents, long length, tagArray* textTagList, treeNode* stopwordsTree);
+int getCount(char* contents, long length, tagArray* textTagList, treeNode* stopwordsTree, bool debugMode);
 
 #endif

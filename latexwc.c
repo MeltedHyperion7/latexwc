@@ -11,7 +11,7 @@
 
 int main(int argc, char const *argv[]) {
     // TODO run valgrind
-    bool helpFlagSet, headingsFlagSet, ignoreStopwordsFlagSet, ignoreStopwordsLongFlagSet, fileProvided;
+    bool helpFlagSet, headingsFlagSet, ignoreStopwordsFlagSet, ignoreStopwordsLongFlagSet, debugMode, fileProvided;
     char* filename;
 
     // if -h flag is set, headings and titles are excluded from the count
@@ -20,6 +20,7 @@ int main(int argc, char const *argv[]) {
     addFlag('.', NULL, true, &fileProvided, &filename);
     addFlag('s', "ignore-stopwords", false, &ignoreStopwordsFlagSet, NULL);
     addFlag('S', "ignore-stopwords-long", false, &ignoreStopwordsLongFlagSet, NULL);
+    addFlag('d', "debug", false, &debugMode, NULL);
     // TODO add flag for user's stopwords file
 
     bool argParsingSuccess = parseArguments(argc, argv);
@@ -93,9 +94,9 @@ int main(int argc, char const *argv[]) {
         long length;
 
         if(getContents(filename, &contents, &length)) {
-            int count = getCount(contents, length, textTagList, stopwordsTree);
+            int count = getCount(contents, length, textTagList, stopwordsTree, debugMode);
             if(count == -1) {
-                printf("An error occured while parsing the file.");
+                printf("An error occurred while parsing the file.");
             } else {
                 printf("Word Count: %d\n", count);
             }

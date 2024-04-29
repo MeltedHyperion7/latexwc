@@ -9,7 +9,7 @@
 
 #include "walk_file.h"
 
-int getCount(char* contents, long length, tagArray* textTagList, treeNode* stopwordsTree) {
+int getCount(char* contents, long length, tagArray* textTagList, treeNode* stopwordsTree, bool debugMode) {
     char c;
 
     // implement bracket stack. the first item is for text outside any brackets
@@ -72,6 +72,10 @@ int getCount(char* contents, long length, tagArray* textTagList, treeNode* stopw
                     // (if the flag was set, [stopwordsTree] would be non NULL)
                     if(stopwordsTree == NULL || !stopwordsTreeSearch(stopwordsTree, lastWord)) {
                         count++;
+
+                        if(debugMode) {
+                            printf("[%d] %s\n", count, lastWord);
+                        }
                     }
                 }
 
